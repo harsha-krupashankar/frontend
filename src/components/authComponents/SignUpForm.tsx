@@ -14,9 +14,12 @@ import { Input } from "../ui/input";
 import { z } from "zod";
 import { Button } from "../ui/button";
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { requestSignUp } from "@/services/auth";
+import { toast } from "../ui/use-toast";
 
 const SignUpForm = () => {
+    const navigate = useNavigate();
     const form = useForm({
         resolver: zodResolver(signUpInput),
         defaultValues: {
@@ -26,8 +29,17 @@ const SignUpForm = () => {
         },
     });
 
-    const onSubmit = (values: z.infer<typeof signUpInput>) => {
-        console.log(values);
+    const onSubmit = async (values: z.infer<typeof signUpInput>) => {
+        const response = await requestSignUp(values);
+        if (response?.status == 200) {
+            navigate("/blogs");
+        } else {
+            toast({
+                title: "Something went wrong",
+                description: "Please try again later",
+                variant: "destructive",
+            });
+        }
     };
     return (
         <Form {...form}>

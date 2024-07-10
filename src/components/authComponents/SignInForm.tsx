@@ -12,10 +12,12 @@ import {
 import { Input } from "../ui/input";
 import { z } from "zod";
 import { Button } from "../ui/button";
-import * as React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { requestSignIn } from "@/services/auth";
+import { toast } from "../ui/use-toast";
 
 const SignInForm = () => {
+    const navigate = useNavigate();
     const form = useForm({
         resolver: zodResolver(signInInput),
         defaultValues: {
@@ -24,8 +26,16 @@ const SignInForm = () => {
         },
     });
 
-    const onSubmit = (values: z.infer<typeof signInInput>) => {
-        console.log(values);
+    const onSubmit = async (values: z.infer<typeof signInInput>) => {
+        const response = await requestSignIn(values);
+        if (response?.status == 200) {
+            navigate("/blogs");
+        } else {
+            toast({
+                title: "Something went wrong",
+                description: "Please try again later",
+            });
+        }
     };
     return (
         <Form {...form}>
@@ -79,8 +89,12 @@ const SignInForm = () => {
                     )}
                 />
 
-                <Button type="submit" className="w-full">
-                    Submit
+                <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={form.formState.isSubmitting}
+                >
+                    {form.formState.isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
             </form>
         </Form>
